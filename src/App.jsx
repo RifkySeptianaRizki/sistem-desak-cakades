@@ -183,13 +183,27 @@ export default function App() {
   }, [])
 
   return (
-    <div
-      className="fixed inset-0 w-screen h-screen bg-center bg-no-repeat overflow-hidden select-none"
-      style={{
-        backgroundImage: `url(${bgSistem})`,
-        backgroundSize: '100% 100%',
-      }}
-    >
+    <div className="fixed inset-0 w-screen h-screen bg-black overflow-hidden select-none">
+      {/* Background Image Layer: Soft blur dan pencahayaan seimbang saat di Home */}
+      <div
+        className={`absolute inset-0 bg-center bg-no-repeat transition-all duration-700 pointer-events-none ${
+          mode === 0
+            ? 'blur-[6px] scale-105 opacity-80 brightness-75'
+            : 'blur-0 scale-100 opacity-100 brightness-100'
+        }`}
+        style={{
+          backgroundImage: `url(${bgSistem})`,
+          backgroundSize: '100% 100%',
+        }}
+      />
+
+      {/* Dimmer Hitam Halus Saat di Home (tidak terlalu pekat agar latar tetap terlihat estetik) */}
+      <div
+        className={`absolute inset-0 bg-black/25 transition-opacity duration-700 pointer-events-none z-[2] ${
+          mode === 0 ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
+
       {/* Overlay Hitam Transparan Bagian Atas Memudar ke Tengah */}
       <div className="absolute top-0 inset-x-0 h-[38%] bg-gradient-to-b from-black/85 via-black/40 to-transparent pointer-events-none z-[1]" />
 
@@ -212,8 +226,8 @@ export default function App() {
         <CooldownTimer mode={mode} onBackToTitle={() => setMode(0)} />
       )}
 
-      {/* Efek partikel bara api melayang di sekeliling layar */}
-      <EmberOverlay />
+      {/* Efek partikel bara api melayang di depan banner HANYA di halaman Home (Mode 0) */}
+      {mode === 0 && <EmberOverlay />}
     </div>
   )
 }

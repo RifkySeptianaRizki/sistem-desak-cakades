@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { playBumperSound, playBumperCalonSound, stopBumperSound } from '../utils/audioManager'
+import EmberOverlay from './EmberOverlay'
 
 // Import foto calon langsung dari assets
 import fotoCalon1 from '../assets/1_trimmed.png'
@@ -547,10 +548,8 @@ export default function BumperSuite({ initialBumper = 'sambutan', onBackToTitle 
         </div>
       )}
 
-
-
-
-
+      {/* Efek Bara Api Melayang di Depan Layar: Aktif di Sambutan & Calon-Calon (Kecuali Indonesia Raya) */}
+      {activeBumper !== 'indonesia-raya' && <EmberOverlay />}
     </div>
   )
 }
