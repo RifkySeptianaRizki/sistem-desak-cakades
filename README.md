@@ -23,7 +23,7 @@ Aplikasi siaran panggung resmi (*Live Broadcast & Stage Display System*) untuk a
 
 3. **Countdown Timer Debat (4 Sesi)**:
    - Sesi 1: Pemaparan Visi, Misi & Program Unggulan (5 Menit)
-   - Sesi 2: Pengajuan Pertanyaan Panelis (2 Menit)
+   - Sesi 2: Pengajuan Pertanyaan Panelis (1 Menit 30 Detik)
    - Sesi 3: Jawaban Cakades atas Pertanyaan Panelis (3 Menit)
    - Sesi 4: Closing Statement & Deklarasi Damai (2 Menit)
    - Chamber kaca cair (*Liquid Glass Single Chamber*), font digital Technology-Bold, hitung mundur 3-2-1, serta penanda suara gong di detik akhir.

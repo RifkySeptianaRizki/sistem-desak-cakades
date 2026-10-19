@@ -27,7 +27,7 @@ Dokumen ringkas fungsi tombol keyboard untuk operator siaran panggung.
 | Tombol | Fungsi |
 | :--- | :--- |
 | **`Ctrl + 1`** | Masuk **Sesi 1**: Pemaparan Visi, Misi & Program Unggulan (5 Menit) |
-| **`Ctrl + 2`** | Masuk **Sesi 2**: Pengajuan Pertanyaan Panelis (2 Menit) |
+| **`Ctrl + 2`** | Masuk **Sesi 2**: Pengajuan Pertanyaan Panelis (1 Menit 30 Detik) |
 | **`Ctrl + 3`** | Masuk **Sesi 3**: Jawaban Cakades atas Pertanyaan Panelis (3 Menit) |
 | **`Ctrl + 4`** | Masuk **Sesi 4**: Closing Statement & Deklarasi Damai (2 Menit) |
 | **`Ctrl + 0`** | Kembali ke Halaman Utama (*Standby*) |

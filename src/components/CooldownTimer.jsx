@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { playSound, playBeepSeries, unlockAudio } from '../utils/audioManager'
 
 export default function CooldownTimer({ mode = 1, onBackToTitle }) {
-  // Durasi default: Mode 1 = 5 Menit (300s) | Mode 2 = 1 Menit (60s) | Mode 3 = 3 Menit (180s) | Mode 4 = 2 Menit (120s)
+  // Durasi default: Mode 1 = 5 Menit (300s) | Mode 2 = 1 Menit Setengah (90s) | Mode 3 = 3 Menit (180s) | Mode 4 = 2 Menit (120s)
   const getDefaultDuration = (m) => {
-    if (m === 2) return 60
+    if (m === 2) return 90 // 1 Menit Setengah (90 detik)
     if (m === 3) return 180
     if (m === 4) return 120
     return 300
@@ -158,7 +158,7 @@ export default function CooldownTimer({ mode = 1, onBackToTitle }) {
         }
       }
     } else if (mode === 2) {
-      // ===== MODE 2 (Sesi 2: Pengajuan Pertanyaan Panelis - 1 Menit) =====
+      // ===== MODE 2 (Sesi 2: Pengajuan Pertanyaan Panelis - 1 Menit Setengah / 90 Detik) =====
       // 1. Sisa Waktu 30 Detik: Suara BIP 1 Kali
       if (timeLeft === 30 && !triggeredMilestones.current.thirtySec) {
         if (totalSeconds >= 30) {
