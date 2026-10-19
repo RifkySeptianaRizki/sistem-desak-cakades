@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 import { playBumperSound, playBumperCalonSound, stopBumperSound } from '../utils/audioManager'
+import CandidateFrame from './CandidateFrame'
 import EmberOverlay from './EmberOverlay'
+import './CandidateBumper.css'
 
-// Import foto calon langsung dari assets
-import fotoCalon1 from '../assets/1_trimmed.png'
-import fotoCalon2 from '../assets/2_trimmed.png'
-import fotoCalon3 from '../assets/3_trimmed.png'
-import fotoCalon4 from '../assets/4_trimmed.png'
+// Import foto calon langsung dari assets (Format WebP untuk performa cepat)
+import fotoCalon1 from '../assets/1_trimmed.webp'
+import fotoCalon2 from '../assets/2_trimmed.webp'
+import fotoCalon3 from '../assets/3_trimmed.webp'
+import fotoCalon4 from '../assets/4_trimmed.webp'
 import videoIndonesiaRaya from '../assets/Indonesia-Raya.mp4'
 
 const BUMPERS = [
@@ -43,6 +45,15 @@ export default function BumperSuite({ initialBumper = 'sambutan', onBackToTitle 
   const [animKey, setAnimKey] = useState(0)
   const [bumperPhase, setBumperPhase] = useState('enter') // 'enter' | 'active' | 'exit'
 
+  const transitionTimers = useRef([])
+  const clearTransitionTimers = () => {
+    transitionTimers.current.forEach(clearTimeout)
+    transitionTimers.current = []
+  }
+  const scheduleTransition = (callback, delay) => {
+    transitionTimers.current.push(setTimeout(callback, delay))
+  }
+
   // Video State untuk Indonesia Raya
   const [videoSrc, setVideoSrc] = useState(videoIndonesiaRaya)
   const videoRef = useRef(null)
@@ -50,17 +61,18 @@ export default function BumperSuite({ initialBumper = 'sambutan', onBackToTitle 
 
   // Jalankan animasi dan audio saat bumper aktif berubah
   const triggerBumper = (bumperId) => {
+    clearTransitionTimers()
     // Exit animation for current bumper first
     setBumperPhase('exit')
 
-    setTimeout(() => {
+    scheduleTransition(() => {
       setActiveBumper(bumperId)
       setAnimKey((prev) => prev + 1)
       setBumperPhase('enter')
 
       if (bumperId === 'indonesia-raya') {
         stopBumperSound()
-        setTimeout(() => {
+        scheduleTransition(() => {
           if (videoRef.current) {
             videoRef.current.currentTime = 0
             videoRef.current.play().catch((e) => {
@@ -83,7 +95,7 @@ export default function BumperSuite({ initialBumper = 'sambutan', onBackToTitle 
       }
 
       // After enter animation completes, set to active
-      setTimeout(() => setBumperPhase('active'), 1800)
+      scheduleTransition(() => setBumperPhase('active'), 1800)
     }, 400) // Wait for exit animation
   }
 
@@ -96,7 +108,7 @@ export default function BumperSuite({ initialBumper = 'sambutan', onBackToTitle 
 
     if (target === 'indonesia-raya') {
       stopBumperSound()
-      setTimeout(() => {
+      scheduleTransition(() => {
         if (videoRef.current) {
           videoRef.current.currentTime = 0
           videoRef.current.play().catch((e) => {
@@ -110,10 +122,10 @@ export default function BumperSuite({ initialBumper = 'sambutan', onBackToTitle 
       playBumperSound()
     }
 
-    const timer = setTimeout(() => setBumperPhase('active'), 1800)
+    scheduleTransition(() => setBumperPhase('active'), 1800)
 
     return () => {
-      clearTimeout(timer)
+      clearTransitionTimers()
       stopBumperSound()
       const v = videoRef.current
       if (v) {
@@ -126,7 +138,7 @@ export default function BumperSuite({ initialBumper = 'sambutan', onBackToTitle 
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
-      if (e.ctrlKey || e.metaKey) return
+      if (e.ctrlKey || e.metaKey || e.altKey || e.repeat || e.target?.isContentEditable) return
 
       if (e.key === 's' || e.key === 'S') { e.preventDefault(); triggerBumper('sambutan'); return }
       if (e.key === 'i' || e.key === 'I' || e.key === 'v' || e.key === 'V') { e.preventDefault(); triggerBumper('indonesia-raya'); return }
@@ -174,7 +186,7 @@ export default function BumperSuite({ initialBumper = 'sambutan', onBackToTitle 
     if (file) {
       const url = URL.createObjectURL(file)
       setVideoSrc(url)
-      setTimeout(() => {
+      scheduleTransition(() => {
         if (videoRef.current) {
           videoRef.current.currentTime = 0
           videoRef.current.play().catch((err) => {
@@ -199,6 +211,7 @@ export default function BumperSuite({ initialBumper = 'sambutan', onBackToTitle 
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20 select-none overflow-hidden">
       
+      {activeBumper === 'indonesia-raya' && <>
       {/* Dynamic Background Flare / Shockwave on each transition */}
       <div
         key={`shockwave-${animKey}`}
@@ -229,110 +242,54 @@ export default function BumperSuite({ initialBumper = 'sambutan', onBackToTitle 
         }}
       />
 
+      </>}
+
       {/* ========================================================================================= */}
-      {/* 1. BUMPER SAMBUTAN KETUA PANITIA PILKADES                                                 */}
-      {/* ========================================================================================= */}
-      {/* ========================================================================================= */}
-      {/* 1. BUMPER SAMBUTAN KETUA PANITIA PILKADES (Center Stage Layout — APENDI)                 */}
+      {/* 1. BUMPER SAMBUTAN KETUA PANITIA PILKADES (Center Stage Layout — Desain Bumper Calon)    */}
       {/* ========================================================================================= */}
       {activeBumper === 'sambutan' && (
-        <div
+        <section
           key={`sambutan-${animKey}`}
-          className={`relative flex flex-col items-center justify-center text-center z-10 w-full max-w-[1100px] px-6 sm:px-10 py-6 mx-auto ${getAnimClass()}`}
+          className={`candidate-bumper ${bumperPhase === 'exit' ? 'candidate-bumper--exit' : ''}`}
+          aria-label="Sambutan Ketua Panitia Pilkades"
+          aria-live="polite"
         >
-          {/* Top Pill Badge */}
-          <div className="mb-5 sm:mb-7 animate-badge-slide">
-            <div className="inline-flex items-center gap-2.5 px-6 sm:px-8 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-amber-500/25 via-amber-400/40 to-amber-500/25 border border-amber-300/50 backdrop-blur-xl shadow-[0_0_30px_rgba(251,191,36,0.3)]">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-300 animate-pulse shadow-[0_0_10px_rgba(251,191,36,1)]" />
-              <span
-                className="text-xs sm:text-sm md:text-base text-amber-100 tracking-[0.26em] uppercase font-bold"
-                style={{ fontFamily: "'Albertus Nova', serif" }}
-              >
-                DESAK CAKADES • DESA BAGINDA 2026
-              </span>
+          <CandidateFrame className="candidate-frame--stage" />
+          <p className="candidate-bumper__event-title">PEMILIHAN KEPALA DESA BAGINDA 2026</p>
+          <header className="candidate-bumper__header candidate-bumper__header--sambutan">
+            <div className="candidate-bumper__brand candidate-bumper__brand--sambutan">
+              DESAK<strong>CAKADES</strong>
             </div>
-          </div>
+            
+          </header>
 
-          {/* Subtitle / Session Category */}
-          <h2
-            className="text-sm sm:text-base md:text-lg lg:text-xl text-amber-300 uppercase tracking-[0.28em] font-bold mb-3 sm:mb-4 animate-text-slide-up"
-            style={{
-              fontFamily: "'Albertus Nova', serif",
-              textShadow: '0 0 14px rgba(251, 191, 36, 0.7), 0 2px 10px rgba(0, 0, 0, 0.95)',
-              animationDelay: '0.25s',
-              animationFillMode: 'both',
-            }}
-          >
-            SAMBUTAN & PEMBUKAAN ACARA
-          </h2>
+          {/* Kotak Identitas Center (Tanpa Foto, Layout Sambutan Sesuai Desain Bumper Calon) */}
+          <div className="candidate-bumper__identity candidate-bumper__identity--center">
+            <CandidateFrame />
 
-          {/* Designation / Role Title */}
-          <div
-            className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl text-amber-100 uppercase tracking-[0.14em] font-extrabold leading-tight mb-4 sm:mb-6 animate-text-slide-up"
-            style={{
-              fontFamily: "'Albertus Nova', 'Albertus', serif",
-              textShadow:
-                '0 0 20px rgba(255, 255, 255, 0.9), 0 0 40px rgba(251, 191, 36, 0.5), 0 4px 20px rgba(0, 0, 0, 0.95)',
-              animationDelay: '0.45s',
-              animationFillMode: 'both',
-            }}
-          >
-            KETUA PANITIA PILKADES
-          </div>
-
-          {/* Golden Ribbon Line Divider (Centered with Diamond) */}
-          <div
-            className="my-3 sm:my-5 flex items-center gap-4 sm:gap-6 w-full max-w-[480px] opacity-90 animate-text-slide-up"
-            style={{ animationDelay: '0.65s', animationFillMode: 'both' }}
-          >
-            <div className="flex-1 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.8)]" />
-            <div className="w-3.5 h-3.5 rotate-45 bg-amber-300 shadow-[0_0_18px_rgba(251,191,36,1)] border border-white/90" />
-            <div className="flex-1 h-[2px] bg-gradient-to-l from-transparent via-amber-400 to-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.8)]" />
-          </div>
-
-          {/* The Name: APENDI (Monumental, Regal, Generously Spaced) */}
-          <h1
-            className="text-5xl sm:text-7xl md:text-8xl lg:text-[96px] xl:text-[110px] text-white uppercase tracking-[0.08em] leading-none font-black my-4 sm:my-6 select-none animate-text-slide-up"
-            style={{
-              fontFamily: "'Albertus Nova', 'Albertus', serif",
-              fontWeight: 800,
-              textShadow:
-                '0 0 25px rgba(255, 255, 255, 1), 0 0 50px rgba(255, 255, 255, 0.6), 0 0 90px rgba(251, 191, 36, 0.45), 0 5px 30px rgba(0, 0, 0, 0.95)',
-              animationDelay: '0.85s',
-              animationFillMode: 'both',
-            }}
-          >
-            APENDI
-          </h1>
-
-          {/* Region Tag & Motto */}
-          <div
-            className="mt-4 sm:mt-6 flex flex-col items-center gap-3 sm:gap-4 animate-text-slide-up"
-            style={{ animationDelay: '1.05s', animationFillMode: 'both' }}
-          >
-            <div
-              className="flex items-center gap-3 text-sm sm:text-base md:text-lg text-amber-200/90 tracking-[0.2em] uppercase font-bold"
-              style={{
-                fontFamily: "'Albertus Nova', serif",
-                textShadow: '0 0 10px rgba(255, 255, 255, 0.5), 0 2px 8px rgba(0, 0, 0, 0.9)',
-              }}
-            >
-              <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,1)]" />
-              <span>DESA BAGINDA • KAB. SUMEDANG</span>
-              <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,1)]" />
+            {/* Badge Kategori Acara Berbingkai */}
+            <div className="candidate-bumper__role-badge">
+              <span>SAMBUTAN &amp; PEMBUKAAN ACARA</span>
             </div>
 
-            <p
-              className="text-xs sm:text-sm md:text-base text-white/85 tracking-[0.1em] uppercase font-medium max-w-xl leading-relaxed mt-1"
-              style={{
-                fontFamily: "'Albertus Nova', serif",
-                textShadow: '0 0 8px rgba(0, 0, 0, 0.9)',
-              }}
-            >
-              Membuka Ruang Dialog Kritis, Gagasan Transparan & Demokrasi Desa Bermartabat
+            {/* Jabatan / Designation */}
+            <h2 className="candidate-bumper__sambutan-role">
+              KETUA PANITIA PILKADES
+            </h2>
+
+            {/* Garis Emas Pembatas */}
+            <div className="candidate-bumper__rule" />
+
+            {/* Nama Tokoh Sambutan */}
+            <h1 className="candidate-bumper__name candidate-bumper__name--center">
+              <span>APENDI</span>
+            </h1>
+
+            <p className="candidate-bumper__sambutan-motto">
+              Membuka Ruang Dialog Kritis, Gagasan Transparan &amp; Demokrasi Desa Bermartabat
             </p>
           </div>
-        </div>
+        </section>
       )}
 
       {/* ========================================================================================= */}
@@ -366,8 +323,6 @@ export default function BumperSuite({ initialBumper = 'sambutan', onBackToTitle 
                   className="w-full h-full object-contain bg-black"
                   controls
                   autoPlay
-                  onPlay={() => setIsVideoPlaying(true)}
-                  onPause={() => setIsVideoPlaying(false)}
                 />
               ) : (
                 <div className="relative flex flex-col items-center justify-center p-6 text-center z-10 max-w-lg">
@@ -407,145 +362,63 @@ export default function BumperSuite({ initialBumper = 'sambutan', onBackToTitle 
       {/* 3. BUMPER MASUK CALON 1, 2, 3, 4 — Desain Broadcast Elegan dengan Foto Besar             */}
       {/* ========================================================================================= */}
       {activeBumper.startsWith('calon-') && (
-        <div
+        <section
           key={`calon-${activeBumper}-${animKey}`}
-          className={`relative flex flex-row items-center justify-between z-10 w-full h-full max-w-[1800px] pl-8 sm:pl-12 md:pl-16 lg:pl-20 xl:pl-24 pr-0 md:pr-4 lg:pr-8 xl:pr-12 ${getAnimClass()}`}
+          className={`candidate-bumper ${bumperPhase === 'exit' ? 'candidate-bumper--exit' : ''}`}
+          aria-label={currentCalonData.title}
+          aria-live="polite"
         >
-          {/* Left Side: Candidate Information Panel */}
-          <div className="flex flex-col items-start text-left flex-1 max-w-[700px] xl:max-w-[780px] z-10 py-6">
-
-            {/* Top Pill Header */}
-            <div className="mb-4 sm:mb-6 animate-badge-slide">
-              <div className="inline-flex items-center gap-2.5 px-6 py-2 rounded-full bg-gradient-to-r from-amber-500/25 via-amber-400/40 to-amber-500/25 border border-amber-300/50 backdrop-blur-xl shadow-[0_0_30px_rgba(251,191,36,0.3)]">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-300 animate-pulse shadow-[0_0_10px_rgba(251,191,36,1)]" />
-                <span
-                  className="text-xs sm:text-sm md:text-base text-amber-100 tracking-[0.24em] uppercase font-bold"
-                  style={{ fontFamily: "'Albertus Nova', serif" }}
-                >
-                  DESAK CAKADES • DESA BAGINDA 2026
-                </span>
-              </div>
+          <CandidateFrame className="candidate-frame--stage" />
+          <p className="candidate-bumper__event-title">PEMILIHAN KEPALA DESA BAGINDA 2026</p>
+          <header className="candidate-bumper__header">
+            <div className="candidate-bumper__brand">
+              DESAK <strong>CAKADES</strong>
             </div>
+            
+          </header>
 
-            {/* Candidate Role & Number Lockup — Unified Albertus Nova Font */}
-            <div className="flex items-center gap-5 sm:gap-7 my-2 sm:my-3 animate-text-slide-up" style={{ animationDelay: '0.35s', animationFillMode: 'both' }}>
-              {/* Grand Official Number in Albertus Nova (NOT Technology font) */}
-              <div className="relative select-none flex-shrink-0">
-                <span
-                  className="text-[85px] sm:text-[105px] md:text-[125px] lg:text-[145px] text-white font-extrabold leading-none tracking-tight"
-                  style={{
-                    fontFamily: "'Albertus Nova', 'Albertus', serif",
-                    fontWeight: 800,
-                    textShadow:
-                      '0 0 20px rgba(255, 255, 255, 0.95), 0 0 45px rgba(251, 191, 36, 0.65), 0 4px 20px rgba(0, 0, 0, 0.95)',
-                  }}
-                >
-                  {currentCalonData?.num || '01'}
-                </span>
-              </div>
-
-              {/* Title & Category Info */}
-              <div className="flex flex-col justify-center">
-                {/* NOMOR URUT Badge — High-contrast dark glass capsule with crisp white typography */}
-                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/70 border border-white/25 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.85)] mb-1.5 w-fit">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,1)]" />
-                  <span
-                    className="text-xs sm:text-sm text-white uppercase tracking-[0.24em] font-extrabold select-none"
-                    style={{
-                      fontFamily: "'Albertus Nova', serif",
-                      textShadow: '0 1px 4px rgba(0, 0, 0, 0.95)',
-                    }}
-                  >
-                    NOMOR URUT
-                  </span>
-                </div>
-
-                <h2
-                  className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-white uppercase tracking-[0.14em] font-extrabold leading-tight select-none"
-                  style={{
-                    fontFamily: "'Albertus Nova', serif",
-                    textShadow:
-                      '0 0 16px rgba(255, 255, 255, 0.9), 0 0 30px rgba(251, 191, 36, 0.6), 0 2px 10px rgba(0, 0, 0, 0.95)',
-                  }}
-                >
-                  CALON KEPALA DESA
-                </h2>
-              </div>
-            </div>
-
-            {/* Golden Ribbon Line Divider */}
-            <div className="my-3 sm:my-4 flex items-center gap-3 sm:gap-4 w-full max-w-[560px] opacity-90 animate-text-slide-up" style={{ animationDelay: '0.55s', animationFillMode: 'both' }}>
-              <div className="flex-1 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.8)]" />
-              <div className="w-3 h-3 rotate-45 bg-amber-300 shadow-[0_0_15px_rgba(251,191,36,1)] border border-white/80" />
-              <div className="flex-1 h-[2px] bg-gradient-to-l from-transparent via-amber-400 to-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.8)]" />
-            </div>
-
-            {/* Candidate Name — Strict Single Line (Never wrap down) */}
-            <h1
-              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-[62px] text-white uppercase tracking-[0.03em] leading-tight font-black my-2 select-none whitespace-nowrap animate-text-slide-up"
-              style={{
-                fontFamily: "'Albertus Nova', 'Albertus', serif",
-                fontWeight: 800,
-                textShadow:
-                  '0 0 16px rgba(255, 255, 255, 0.95), 0 0 35px rgba(255, 255, 255, 0.55), 0 0 65px rgba(251, 191, 36, 0.35), 0 4px 20px rgba(0, 0, 0, 0.9)',
-                animationDelay: '0.75s',
-                animationFillMode: 'both',
-              }}
-            >
-              {currentCalonData?.name || 'NAMA CALON'}
-            </h1>
-
-            {/* Desa Baginda Subtitle */}
-            <div
-              className="mt-2 flex items-center gap-2.5 text-amber-100/90 tracking-[0.14em] uppercase text-sm sm:text-base md:text-lg font-medium whitespace-nowrap animate-text-slide-up"
-              style={{
-                fontFamily: "'Albertus Nova', serif",
-                textShadow: '0 0 10px rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.9)',
-                animationDelay: '0.95s',
-                animationFillMode: 'both',
-              }}
-            >
-              <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
-              <span>DESA BAGINDA • KAB. SUMEDANG</span>
-            </div>
-          </div>
-
-          {/* Right Side: Giant Candidate Portrait Anchored to Bottom Right (Balanced vertical framing) */}
-          <div className="hidden md:flex flex-col items-end justify-end flex-shrink-0 z-10 animate-portrait-entrance relative self-end h-[82vh] lg:h-[86vh] xl:h-[89vh] max-h-[910px] mr-0 lg:mr-2 xl:mr-6 translate-y-2 lg:translate-y-3">
-            <div className="relative h-full flex items-end justify-end">
-              {/* Candidate Photo (trimmed, ultra-clean, no dark outline artifacts) */}
+          {/* Foto Calon Besar Megah di Sebelah Kanan dengan Efek Glitch Pas pada Foto */}
+          <div className="candidate-bumper__portrait">
+            <div className="candidate-bumper__portrait-glitch-wrap">
               <img
-                src={currentCalonData?.photo}
-                alt={currentCalonData?.name}
-                className="h-full w-auto max-w-[50vw] object-contain object-bottom select-none"
-                style={{
-                  filter: 'drop-shadow(0 10px 25px rgba(0,0,0,0.3))',
-                  maskImage: 'linear-gradient(to bottom, black 70%, transparent 98%)',
-                  WebkitMaskImage: 'linear-gradient(to bottom, black 70%, transparent 98%)',
-                }}
+                className="candidate-bumper__portrait-img"
+                src={currentCalonData.photo}
+                alt={currentCalonData.name}
+                fetchPriority="high"
+              />
+              <img
+                className="candidate-bumper__portrait-ghost candidate-bumper__portrait-ghost--slice1"
+                src={currentCalonData.photo}
+                aria-hidden="true"
+              />
+              <img
+                className="candidate-bumper__portrait-ghost candidate-bumper__portrait-ghost--slice2"
+                src={currentCalonData.photo}
+                aria-hidden="true"
               />
             </div>
           </div>
 
-          {/* Mobile: Photo centered below on small screens */}
-          <div className="flex md:hidden justify-center w-full mt-4 animate-portrait-entrance">
-            <img
-              src={currentCalonData?.photo}
-              alt={currentCalonData?.name}
-              className="w-[240px] h-[320px] object-contain object-bottom select-none"
-              style={{
-                filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.3))',
-                maskImage: 'linear-gradient(to bottom, black 70%, transparent 98%)',
-                WebkitMaskImage: 'linear-gradient(to bottom, black 70%, transparent 98%)',
-              }}
-            />
+          {/* Kotak Besar Identitas Calon: Menyatu Lengkap dengan Nomor Urut Resmi */}
+          <div className="candidate-bumper__identity">
+            <CandidateFrame />
+            
+            {/* 1. CALON KEPALA DESA (Di Atas, Berbingkai / Border) */}
+            <div className="candidate-bumper__role-badge">
+              <span>CALON KEPALA DESA BAGINDA</span>
+            </div>
+
+            {/* 2. NOMOR URUT (Di Bawah, Tanpa Border) */}
+            <div className="candidate-bumper__nomor-lockup">
+              <span className="candidate-bumper__nomor-label">NOMOR URUT</span>
+              <span className="candidate-bumper__nomor-val">{currentCalonData.num}</span>
+            </div>
+
+            <div className="candidate-bumper__rule" />
+            <h1 className="candidate-bumper__name"><span>{currentCalonData.name}</span></h1>
           </div>
 
-          {/* Bottom Cinematic Gradient Overlay (Seamlessly dissolves bottom of photo and screen) */}
-          <div
-            className="absolute inset-x-0 bottom-0 h-32 sm:h-44 md:h-52 bg-gradient-to-t from-black/80 via-black/35 to-transparent pointer-events-none z-15"
-          />
-        </div>
+        </section>
       )}
 
       {/* Efek Bara Api Melayang di Depan Layar: Aktif di Sambutan & Calon-Calon (Kecuali Indonesia Raya) */}

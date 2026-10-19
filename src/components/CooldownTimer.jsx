@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { playSound, playBeepSeries, unlockAudio } from '../utils/audioManager'
+import CandidateFrame from './CandidateFrame'
+import EmberOverlay from './EmberOverlay'
+import './CandidateBumper.css'
 
 export default function CooldownTimer({ mode = 1, onBackToTitle }) {
   // Durasi default: Mode 1 = 5 Menit (300s) | Mode 2 = 1 Menit Setengah (90s) | Mode 3 = 3 Menit (180s) | Mode 4 = 2 Menit (120s)
@@ -279,128 +282,144 @@ export default function CooldownTimer({ mode = 1, onBackToTitle }) {
   const seconds = timeLeft % 60
 
   const isFinished = timeLeft === 0
-  const isCritical = timeLeft <= 5 && timeLeft > 0
+  const isCritical = timeLeft <= 10 && timeLeft > 0
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 px-4 select-none">
+    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20 select-none overflow-hidden">
       
-      {/* Ambient Glow di Belakang Timer */}
+      {/* Ambient Glow di Belakang Kotak Timer (Berubah Warna saat Kritis / Habis) */}
       <div
-        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] sm:w-[650px] md:w-[900px] h-[220px] sm:h-[350px] rounded-full blur-3xl pointer-events-none transition-all duration-700 ${
+        className={`candidate-bumper__timer-ambient ${
           isFinished
-            ? 'bg-red-700/35'
+            ? 'candidate-bumper__timer-ambient--finished'
             : isCritical
-            ? 'bg-amber-600/35 animate-pulse'
-            : 'bg-amber-900/15'
+            ? 'candidate-bumper__timer-ambient--critical'
+            : ''
         }`}
       />
 
-      <div className="relative flex flex-col items-center z-20 w-full max-w-[1400px]">
-        
-        {/* ================= TULISAN DESAK CAKADES BESAR DI ATAS (FONT ALBERTUS, SPACING LEBIH RAPAT & BERCAHAYA) ================= */}
-        <div className="mb-5 sm:mb-7 md:mb-9 lg:mb-11 flex items-center justify-center px-4 text-center select-none">
-          <h1
-            className="text-[36px] sm:text-[56px] md:text-[74px] lg:text-[92px] xl:text-[102px] uppercase leading-none text-white tracking-[0.03em] sm:tracking-[0.05em] select-none text-center"
-            style={{
-              fontFamily: "'Albertus Nova', 'Albertus', 'Marcellus', serif",
-              fontWeight: 700,
-              textShadow:
-                '0 0 12px rgba(255, 255, 255, 0.85), 0 0 25px rgba(255, 255, 255, 0.5), 0 0 45px rgba(255, 255, 255, 0.25), 0 4px 20px rgba(0, 0, 0, 0.95)',
-            }}
-          >
-            DESAK CAKADES
-          </h1>
-        </div>
+      <section
+        key={`timer-session-${mode}`}
+        className="candidate-bumper"
+        aria-label={`Time Keeper - ${getSessionTitle(mode)}`}
+        aria-live="polite"
+      >
+        {/* Frame Panggung Luar dengan Ornamen Sudut Emas */}
+        <CandidateFrame className="candidate-frame--stage" />
+        <p className="candidate-bumper__event-title">PEMILIHAN KEPALA DESA BAGINDA 2026</p>
 
-        {/* ================= SATU KOTAK TUNGGAL LIQUID GLASS MEWAH & RAMPING (Menit : Detik) ================= */}
-        <div className="w-full max-w-[360px] sm:max-w-[570px] md:max-w-[760px] lg:max-w-[900px] xl:max-w-[960px]">
-          <div className="relative w-full h-[155px] sm:h-[230px] md:h-[295px] lg:h-[355px] xl:h-[375px] rounded-[28px] sm:rounded-[38px] md:rounded-[46px] lg:rounded-[52px] bg-gradient-to-b from-white/45 via-white/10 to-white/20 p-[2.5px] sm:p-[3px] shadow-[0_40px_110px_-20px_rgba(0,0,0,0.95),0_0_60px_rgba(255,200,120,0.08),0_0_25px_rgba(255,255,255,0.06),inset_0_2px_4px_rgba(255,255,255,0.65),inset_0_-2px_4px_rgba(0,0,0,0.85)] backdrop-blur-3xl select-none">
+        {/* Header Desak Cakades Sebaris di Tengah & Wilayah di Pojok Kanan Atas */}
+        <header className="candidate-bumper__header candidate-bumper__header--sambutan">
+          <div className="candidate-bumper__brand candidate-bumper__brand--sambutan">
+            DESAK<strong>CAKADES</strong>
+          </div>
           
-          {/* Liquid Glass Chamber */}
-          <div className="relative w-full h-full rounded-[25px] sm:rounded-[35px] md:rounded-[43px] lg:rounded-[49px] overflow-hidden flex items-center justify-center bg-gradient-to-b from-white/[0.14] via-black/55 to-black/85 backdrop-blur-3xl border border-white/20">
-            
-            {/* Curved Specular Liquid Glass Top Highlight (Efek Cembung Kaca Cair) */}
-            <div className="absolute inset-x-0 top-0 h-[48%] bg-gradient-to-b from-white/[0.30] via-white/[0.06] to-transparent pointer-events-none rounded-t-[25px] sm:rounded-t-[35px] md:rounded-t-[43px] lg:rounded-t-[49px] border-t border-white/55" />
+        </header>
 
-            {/* Bottom Internal Refraction Arc (Refleksi Kaca Lengkung Bawah) */}
-            <div className="absolute inset-x-0 bottom-0 h-[22%] bg-gradient-to-t from-white/[0.12] via-white/[0.03] to-transparent pointer-events-none rounded-b-[25px] sm:rounded-b-[35px] md:rounded-b-[43px] lg:rounded-b-[49px] border-b border-white/25" />
+        {/* Kotak Identitas Center (Sesuai Desain Sambutan & Bumper Calon) */}
+        <div className={`candidate-bumper__identity candidate-bumper__identity--center candidate-bumper__identity--timer ${isFinished ? 'is-finished' : isCritical ? 'is-critical' : ''}`}>
+          <CandidateFrame />
 
-            {/* Diagonal Liquid Fluid Light Beam (Kilau Refleksi Kaca Cair) */}
-            <div className="absolute -inset-full bg-gradient-to-tr from-transparent via-white/[0.08] to-transparent rotate-12 pointer-events-none" />
+          {/* Judul Sesi Resmi */}
+          <h2 className="candidate-bumper__sambutan-role candidate-bumper__sambutan-role--timer">
+            {getSessionTitle(mode)}
+          </h2>
 
-            {/* Subtle Internal Warm Liquid Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-2/3 bg-amber-500/[0.06] rounded-full blur-2xl pointer-events-none" />
+          {/* Garis Emas Pembatas */}
+          <div className="candidate-bumper__rule" />
 
-            {/* Deep Ambient Edge Vignette (Tepi Kaca Tebal) */}
-            <div className="absolute inset-0 shadow-[inset_0_0_50px_rgba(0,0,0,0.9)] pointer-events-none rounded-[25px] sm:rounded-[35px] md:rounded-[43px] lg:rounded-[49px]" />
-
-            {/* Tampilan Waktu: Menit : Detik dengan Font Technology-Bold (Center Presisi) */}
-            <div className="relative flex items-center justify-center gap-1.5 sm:gap-4 md:gap-6 z-10 translate-y-2 sm:translate-y-3 md:translate-y-4 lg:translate-y-5">
-              
-              {/* Menit */}
-              <span
-                className="text-[112px] sm:text-[180px] md:text-[242px] lg:text-[300px] xl:text-[320px] text-white tracking-wider leading-none drop-shadow-[0_4px_30px_rgba(0,0,0,0.95)] drop-shadow-[0_0_35px_rgba(255,255,255,0.35)] select-none text-center"
-                style={{
-                  fontFamily: "'Technology-Bold', monospace",
-                }}
-              >
+          {/* Tampilan Timer (Menit : Detik) yang Megah dan Bersinar */}
+          <div className={`candidate-bumper__timer-display ${isFinished ? 'is-finished' : isCritical ? 'is-critical' : ''}`}>
+            <div
+              key={isCritical && isRunning ? `pulse-${timeLeft}` : 'static-pulse'}
+              className={`candidate-bumper__timer-pulse-wrap ${isCritical && isRunning ? 'animate-critical-tick' : ''}`}
+            >
+              <span className="candidate-bumper__timer-val">
                 {String(minutes).padStart(2, '0')}
               </span>
-
-              {/* Titik Dua (Colon) */}
-              <span
-                className="text-[96px] sm:text-[156px] md:text-[212px] lg:text-[265px] xl:text-[285px] text-white/95 leading-none drop-shadow-[0_4px_25px_rgba(0,0,0,0.9)] drop-shadow-[0_0_25px_rgba(255,255,255,0.35)] pb-2 sm:pb-3 select-none animate-pulse"
-                style={{
-                  fontFamily: "'Technology-Bold', monospace",
-                }}
-              >
+              <span className={`candidate-bumper__timer-sep ${isRunning ? 'animate-pulse' : ''}`}>
                 :
               </span>
-
-              {/* Detik */}
-              <span
-                className="text-[112px] sm:text-[180px] md:text-[242px] lg:text-[300px] xl:text-[320px] text-white tracking-wider leading-none drop-shadow-[0_4px_30px_rgba(0,0,0,0.95)] drop-shadow-[0_0_35px_rgba(255,255,255,0.35)] select-none text-center"
-                style={{
-                  fontFamily: "'Technology-Bold', monospace",
-                }}
-              >
+              <span className="candidate-bumper__timer-val">
                 {String(seconds).padStart(2, '0')}
               </span>
-
             </div>
           </div>
+
+          {/* Status Sesi saat Selesai atau Kritis (Peringatan Warna mulai Detik ke-10) */}
+          {isFinished ? (
+            <p className="candidate-bumper__sambutan-motto candidate-bumper__timer-motto--finished">
+              WAKTU TELAH HABIS
+            </p>
+          ) : isCritical ? (
+            <p className="candidate-bumper__sambutan-motto candidate-bumper__timer-motto--critical">
+              PERINGATAN: SISA WAKTU 10 DETIK TERAKHIR
+            </p>
+          ) : null}
         </div>
-      </div>
+      </section>
 
-      {/* ================= TULISAN SESI DI BAWAH (HARUS SATU BARIS / NO WRAP) ================= */}
-      <div className="mt-5 sm:mt-7 md:mt-9 lg:mt-11 flex items-center justify-center px-2 sm:px-4 text-center w-full select-none">
-        <span
-          className="whitespace-nowrap text-xs sm:text-base md:text-xl lg:text-2xl xl:text-[32px] text-white tracking-[0.08em] sm:tracking-[0.12em] md:tracking-[0.14em] uppercase leading-none select-none text-center"
-          style={{
-            fontFamily: "'Albertus Nova', 'Albertus', 'Marcellus', serif",
-            fontWeight: 700,
-            textShadow:
-              '0 0 10px rgba(255, 255, 255, 0.7), 0 0 22px rgba(255, 255, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.15), 0 4px 18px rgba(0, 0, 0, 0.95)',
-          }}
-        >
-          {getSessionTitle(mode)}
-        </span>
-      </div>
-    </div>
+      {/* Partikel Bara Api Melayang di Depan Layar (Konsisten dengan Bumper Sambutan & Calon) */}
+      <EmberOverlay />
 
-      {/* ================= OVERLAY VISUAL COUNTDOWN 3-2-1 (Simpel & Bersih) ================= */}
+      {/* ================= OVERLAY VISUAL COUNTDOWN 3-2-1 (Broadcast Debat Elegan) ================= */}
       {isPreCountdown && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/75 backdrop-blur-sm z-50 pointer-events-none">
-          <span
-            key={preCountdownNum}
-            className="text-[180px] sm:text-[260px] md:text-[340px] text-white tracking-widest leading-none drop-shadow-[0_4px_30px_rgba(0,0,0,0.95)] drop-shadow-[0_0_50px_rgba(255,255,255,0.25)] select-none"
-            style={{
-              fontFamily: "'Albertus Nova', 'Albertus', 'Marcellus', serif",
-              fontWeight: 700,
-            }}
-          >
-            {preCountdownNum}
-          </span>
+        <div className="countdown-overlay">
+          {/* Subtle Ambient Glow Behind Dial */}
+          <div className="countdown-dial-ambient" />
+
+          {/* Central Broadcast Dial / Medallion */}
+          <div className="countdown-dial-card">
+            {/* SVG Circular Progress Ring */}
+            <svg className="countdown-dial-svg" viewBox="0 0 200 200">
+              <defs>
+                <linearGradient id="countdownGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#ffffff" />
+                  <stop offset="30%" stopColor="#fde68a" />
+                  <stop offset="70%" stopColor="#d4af37" />
+                  <stop offset="100%" stopColor="#92400e" />
+                </linearGradient>
+              </defs>
+              {/* Subtle background track */}
+              <circle
+                className="countdown-svg-track"
+                cx="100"
+                cy="100"
+                r="88"
+              />
+              {/* Dynamic sweeping progress stroke (resets every second with key) */}
+              <circle
+                key={preCountdownNum}
+                className="countdown-svg-meter"
+                cx="100"
+                cy="100"
+                r="88"
+              />
+            </svg>
+
+            {/* Corner / Axis Precision Notches (Hairline gold marks at 12, 3, 6, 9 o'clock) */}
+            <div className="countdown-dial-ticks">
+              <span className="countdown-tick countdown-tick--top" />
+              <span className="countdown-tick countdown-tick--right" />
+              <span className="countdown-tick countdown-tick--bottom" />
+              <span className="countdown-tick countdown-tick--left" />
+            </div>
+
+            {/* Inner Glass Core with Metallic Number */}
+            <div className="countdown-dial-core">
+              <span key={preCountdownNum} className="countdown-number">
+                {preCountdownNum}
+              </span>
+            </div>
+          </div>
+
+          {/* Bottom Broadcast Label Badge */}
+          <div className="countdown-info-box">
+            <div className="countdown-status-badge">
+              <span className="countdown-pulse-dot" />
+              <span className="countdown-status-text">SESI SEGERA DIMULAI</span>
+            </div>
+          </div>
         </div>
       )}
 
