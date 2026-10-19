@@ -29,7 +29,11 @@ Aplikasi siaran panggung resmi (*Live Broadcast & Stage Display System*) untuk a
    - Chamber kaca cair (*Liquid Glass Single Chamber*), font digital Technology-Bold, hitung mundur 3-2-1, serta penanda suara gong di detik akhir.
    - **Safety Lock**: Tombol bumper otomatis terkunci saat sesi timer aktif agar tidak menginterupsi debat.
 
-4. **Navigasi Keyboard Penuh**:
+4. **Sistem Undian Giliran Calon (`Ctrl + U`)**:
+   - Fitur pengacak / roll giliran calon yang akan menjawab pertanyaan panelis secara adil dan transparan.
+   - Dilengkapi efek suara `shuffling.mp3`, visual liquid glass cylinder roll, penanda nomor urut monumental, serta fanfare gong saat mendarat di calon pemenang.
+
+5. **Navigasi Keyboard Penuh**:
    - Panduan lengkap seluruh shortcut dapat dilihat pada file [SHORTCUTS.md](SHORTCUTS.md).
 
 ---

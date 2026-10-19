@@ -30,6 +30,7 @@ Dokumen ringkas fungsi tombol keyboard untuk operator siaran panggung.
 | **`Ctrl + 2`** | Masuk **Sesi 2**: Pengajuan Pertanyaan Panelis (1 Menit 30 Detik) |
 | **`Ctrl + 3`** | Masuk **Sesi 3**: Jawaban Cakades atas Pertanyaan Panelis (3 Menit) |
 | **`Ctrl + 4`** | Masuk **Sesi 4**: Closing Statement & Deklarasi Damai (2 Menit) |
+| **`Ctrl + U`** | Masuk **Mode Undian Calon**: Acak / Roll Siapa Calon yang Ditanya |
 | **`Ctrl + 0`** | Kembali ke Halaman Utama (*Standby*) |
 
 ---
@@ -56,3 +57,15 @@ Dokumen ringkas fungsi tombol keyboard untuk operator siaran panggung.
 | **`1` / `2` / `3` / `4`** | Beralih langsung ke Bumper Calon 01, 02, 03, atau 04 |
 | **`←` / `→`** | Pindah ke bumper sebelumnya / berikutnya |
 | **`Esc`** | Keluar dari bumper kembali ke Halaman Utama |
+
+---
+
+## 5. Saat di Mode Undian Giliran Calon (`Ctrl + U`)
+| Tombol | Fungsi |
+| :--- | :--- |
+| **`Spasi`** | Mulai Putar Gacha Murni (6 Detik) / Lanjut Calon Berikutnya (*Efek shuffling.mp3 & Gong Pemenang*) |
+| **`Ctrl + R` / `R`** | Buka Dialog Konfirmasi Reset Undian |
+| **`Enter` / `Y`** | Konfirmasi *Reset* Seluruh Calon Terpilih (saat dialog reset terbuka) |
+| **`Esc`** | Selesai / Kembali ke Halaman Utama |
+| **`Ctrl + 1..4`** | Langsung beralih ke Sesi Debat 1, 2, 3, atau 4 |
+

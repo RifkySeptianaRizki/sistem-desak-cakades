@@ -4,14 +4,63 @@ import EmberOverlay from './components/EmberOverlay'
 import EsportsTitle from './components/EsportsTitle'
 import CooldownTimer from './components/CooldownTimer'
 import BumperSuite from './components/BumperSuite'
+import CandidateLottery from './components/CandidateLottery'
 
 export default function App() {
   // Mode 0: Standby / Judul DESAK CAKADES
   // Mode 1, 2, 3, 4: Cooldown Timer (Sesi 1-4)
   // Mode 'bumper': Bumper Sambutan, Indonesia Raya, Calon 1-4
+  // Mode 'undian': Putaran Mengundi Calon yang Akan Ditanya (Ctrl+U)
   const [mode, setMode] = useState(0)
   const [bumperTarget, setBumperTarget] = useState('sambutan')
   const modeRef = useRef(mode)
+
+  // Persistensi status calon yang sudah diundi (tersimpan saat berpindah mode antar sesi)
+  const [lotteryDrawnIds, setLotteryDrawnIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem('undian_drawn_ids')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('undian_drawn_ids', JSON.stringify(lotteryDrawnIds))
+    } catch {}
+  }, [lotteryDrawnIds])
+
+  // Auto-hide mouse cursor setelah 3 detik tidak digerakkan di semua halaman
+  const [isCursorHidden, setIsCursorHidden] = useState(false)
+  const cursorTimerRef = useRef(null)
+
+  useEffect(() => {
+    const handleActivity = () => {
+      setIsCursorHidden(false)
+      if (cursorTimerRef.current) clearTimeout(cursorTimerRef.current)
+      cursorTimerRef.current = setTimeout(() => {
+        setIsCursorHidden(true)
+      }, 3000)
+    }
+
+    window.addEventListener('mousemove', handleActivity)
+    window.addEventListener('mousedown', handleActivity)
+    window.addEventListener('touchstart', handleActivity)
+    window.addEventListener('keydown', handleActivity)
+
+    cursorTimerRef.current = setTimeout(() => {
+      setIsCursorHidden(true)
+    }, 3000)
+
+    return () => {
+      window.removeEventListener('mousemove', handleActivity)
+      window.removeEventListener('mousedown', handleActivity)
+      window.removeEventListener('touchstart', handleActivity)
+      window.removeEventListener('keydown', handleActivity)
+      if (cursorTimerRef.current) clearTimeout(cursorTimerRef.current)
+    }
+  }, [])
 
   useEffect(() => {
     modeRef.current = mode
@@ -141,6 +190,19 @@ export default function App() {
         return
       }
 
+      // Deteksi Ctrl+U atau Cmd+U untuk masuk ke Halaman Undian Calon (Candidate Lottery / Roll)
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U')) {
+        e.preventDefault()
+        setMode('undian')
+        return
+      }
+
+      // Cegah default browser reload saat menekan Ctrl+R / Cmd+R di mode undian
+      if (currentMode === 'undian' && (e.ctrlKey || e.metaKey) && (e.key === 'r' || e.key === 'R')) {
+        e.preventDefault()
+        return
+      }
+
       // Deteksi Ctrl+0 atau Cmd+0 untuk kembali ke Mode 0 (Judul Standby)
       if ((e.ctrlKey || e.metaKey) && e.key === '0') {
         e.preventDefault()
@@ -183,7 +245,11 @@ export default function App() {
   }, [])
 
   return (
-    <div className="fixed inset-0 w-screen h-screen bg-black overflow-hidden select-none">
+    <div
+      className={`fixed inset-0 w-screen h-screen bg-black overflow-hidden select-none transition-colors duration-300 ${
+        isCursorHidden ? 'cursor-none [&_*]:cursor-none' : ''
+      }`}
+    >
       {/* Background Image Layer: Soft blur dan pencahayaan seimbang saat di Home */}
       <div
         className={`absolute inset-0 bg-center bg-no-repeat transition-all duration-700 pointer-events-none ${
@@ -214,6 +280,13 @@ export default function App() {
       {mode === 0 ? (
         /* Mode 0: Judul Utama DESAK CAKADES (Statis Bersih) */
         <EsportsTitle />
+      ) : mode === 'undian' ? (
+        /* Mode Undian: Putaran Mengundi Calon yang Akan Ditanya (Ctrl+U) */
+        <CandidateLottery
+          drawnIds={lotteryDrawnIds}
+          setDrawnIds={setLotteryDrawnIds}
+          onBackToTitle={() => setMode(0)}
+        />
       ) : mode === 'bumper' ? (
         /* Mode Bumper: Sambutan, Indonesia Raya, Calon 1-4 */
         <BumperSuite

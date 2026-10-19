@@ -229,6 +229,28 @@
   animation: cinematicImpact 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+@keyframes zoomForwardEntrance {
+  0% {
+    transform: scale(0.6) translateY(50px);
+    opacity: 0;
+    filter: blur(16px);
+  }
+  60% {
+    transform: scale(1.04) translateY(-8px);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+.animate-zoom-forward {
+  animation: zoomForwardEntrance 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 .animate-flare-slide {
   animation: flareSlide 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }

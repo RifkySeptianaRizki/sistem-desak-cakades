@@ -4,9 +4,26 @@ import soundBeep from '../assets/beep.mp3'
 import soundGong from '../assets/goong.mp3'
 import soundBumperSambutan from '../assets/sound-bumper-sambutan.mp3'
 import soundBumperCalon from '../assets/sound-bumper-calon.mp3'
+import soundShuffling from '../assets/shuffling.mp3'
 
 let audioUnlocked = false
 let currentBumperAudio = null
+let currentShufflingAudio = null
+let preloadedShufflingAudio = null
+
+// Preload shuffling audio so playback starts with 0ms latency
+export function getPreloadedShufflingAudio() {
+  if (!preloadedShufflingAudio && typeof Audio !== 'undefined') {
+    try {
+      preloadedShufflingAudio = new Audio(soundShuffling)
+      preloadedShufflingAudio.preload = 'auto'
+      preloadedShufflingAudio.loop = false
+    } catch (e) {
+      console.warn('Audio preload warning:', e)
+    }
+  }
+  return preloadedShufflingAudio
+}
 
 // Unlock browser autoplay policy on first user interaction
 export function unlockAudio() {
@@ -20,6 +37,7 @@ export function unlockAudio() {
       }
     }
     audioUnlocked = true
+    getPreloadedShufflingAudio()
   } catch (e) {
     console.warn('Audio unlock warning:', e)
   }
@@ -35,6 +53,7 @@ export function playSound(name) {
   else if (name === 'gong') src = soundGong
   else if (name === 'bumper') src = soundBumperSambutan
   else if (name === 'bumper-calon') src = soundBumperCalon
+  else if (name === 'shuffling') src = soundShuffling
 
   if (!src) return null
 
@@ -107,5 +126,37 @@ export function playBeepSeries(times, gapMs = 700) {
     setTimeout(() => {
       playSound('beep')
     }, i * gapMs)
+  }
+}
+
+// Play shuffling roll sound (with loop option, default false so it matches exact track duration)
+export function playShufflingSound(loop = false) {
+  stopShufflingSound()
+  unlockAudio()
+  try {
+    const audio = getPreloadedShufflingAudio() || new Audio(soundShuffling)
+    audio.loop = loop
+    audio.currentTime = 0
+    audio.play().catch((err) => {
+      console.warn('Autoplay shuffling audio dicegah browser:', err)
+    })
+    currentShufflingAudio = audio
+    return audio
+  } catch (e) {
+    console.error('Gagal memutar shuffling audio:', e)
+    return null
+  }
+}
+
+// Stop currently playing shuffling sound
+export function stopShufflingSound() {
+  if (currentShufflingAudio) {
+    try {
+      currentShufflingAudio.pause()
+      currentShufflingAudio.currentTime = 0
+    } catch (e) {
+      console.warn('Gagal menghentikan shuffling audio:', e)
+    }
+    currentShufflingAudio = null
   }
 }
